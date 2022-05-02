@@ -27,22 +27,22 @@ function App() {
       .get("bin")
       .get(bin)
       .on((data, key) => {
-        console.log(data);
-        setData(data);
+        if (data) setData(data);
       });
   }, [bin]);
 
   useEffect(() => {
-    if (!bin) return;
+    if (!bin || !data) return;
 
-    const timeout = setTimeout(() => {
-      gun.get("grizzly").get("bin").get(bin).put(data);
+    let timeout = setTimeout(() => {
+      if (data) gun.get("grizzly").get("bin").get(bin).put(data);
     }, 1000);
 
     return () => {
       clearTimeout(timeout);
     };
-  }, [bin, data]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [data]);
 
   const newId = () => {
     const id = nanoid(10);
@@ -54,7 +54,7 @@ function App() {
 
   return (
     <div className="container">
-      <header>~decentralized pastebin</header>
+      <header>~decentralized p2p pastebin</header>
       <main>
         <div className="area">
           <textarea
