@@ -8,7 +8,7 @@ let gun = Gun();
 gun.opt({
   peers: [
     "https://grizzly.de1.hashbang.sh/gun",
-    // "https://gun-manhattan.herokuapp.com/gun",
+    "https://gun-manhattan.herokuapp.com/gun",
   ],
 });
 
@@ -26,7 +26,15 @@ function App() {
       .get("grizzly")
       .get("bin")
       .get(bin)
-      .on((data, key) => {
+      .once((data) => {
+        if (data) setData(data);
+      });
+
+    gun
+      .get("grizzly")
+      .get("bin")
+      .get(bin)
+      .on((data) => {
         if (data) setData(data);
       });
   }, [bin]);
