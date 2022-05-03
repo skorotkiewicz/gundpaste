@@ -1,6 +1,6 @@
-import React from "react";
+import monacoThemes from "monaco-themes/themes/themelist";
 
-const Languages = ({ ext, setExt, editor }) => {
+const Languages = ({ ext, setExt, editor, setTheme, theme }) => {
   const supportedLanguages = [
     { id: 1, name: "apex" },
     { id: 2, name: "azcli" },
@@ -63,25 +63,39 @@ const Languages = ({ ext, setExt, editor }) => {
   return (
     <>
       {editor ? (
-        <select
-          onChange={(e) => {
-            setExt(e.target.value);
-          }}
-          style={{ marginBottom: 30 }}
-        >
-          {supportedLanguages.map((l, key) => (
-            <option selected={ext === l.name && true} key={key} value={l.name}>
-              {l.name}
-            </option>
-          ))}
-        </select>
+        <>
+          <select
+            defaultValue={ext}
+            onChange={(e) => {
+              setExt(e.target.value);
+            }}
+          >
+            {supportedLanguages.map((l, key) => (
+              <option key={`lg-${key}`} value={l.name}>
+                {l.name}
+              </option>
+            ))}
+          </select>
+
+          <select
+            defaultValue={theme}
+            onChange={(e) => {
+              setTheme(e.target.value);
+            }}
+          >
+            {Object.keys(monacoThemes).map((key, index) => (
+              <option key={`tm-${index}`} value={key}>
+                {monacoThemes[key]}
+              </option>
+            ))}
+          </select>
+        </>
       ) : (
         <input
           type="text"
           placeholder="Ext"
           defaultValue={ext || "javascript"}
           onChange={(e) => setExt(e.target.value)}
-          style={{ marginBottom: 30, cursor: "text" }}
         />
       )}
     </>

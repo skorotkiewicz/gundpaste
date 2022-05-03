@@ -1,10 +1,18 @@
-import { useEffect, useState, Suspense, lazy, useRef } from "react";
-import { useParams, useNavigate } from "react-router-dom";
+import {
+  useEffect,
+  useState,
+  Suspense,
+  lazy,
+  useRef,
+  useCallback,
+} from "react";
+import { useParams, useNavigate, Link } from "react-router-dom";
 import "./App.scss";
 import Gun from "gun/gun";
 import SEA from "gun/sea";
 import Languages from "./components/Languages";
 import { B64ToText, TextToB64 } from "./utils";
+import Loading from "./components/Loading";
 
 const Monaco = lazy(() => import("./components/Monaco"));
 const CodeArea = lazy(() => import("./components/CodeArea"));
@@ -23,9 +31,11 @@ function App() {
   const [bin, setBin] = useState(params.binId);
   const [bins, setBins] = useState([]);
   const [data, setData] = useState("");
-  const [ext, setExt] = useState("jsx");
+  const [ext, setExt] = useState("javascript");
   const [editor, setEditor] = useState(0);
   const [loading, setLoading] = useState(false);
+  const [loadingPaste, setLoadingPaste] = useState(false);
+  const [theme, setTheme] = useState("monokai");
   const loaded = useRef(false);
 
   useEffect(() => {
@@ -39,7 +49,7 @@ function App() {
 
   useEffect(() => {
     if (!bin) return;
-
+    setLoadingPaste(true);
     gun
       .get("grizzly")
       .get("bin")
@@ -47,6 +57,8 @@ function App() {
       .get(B64ToText(bin))
       .once((d) => {
         if (d) {
+          setLoadingPaste(false);
+
           let p = JSON.parse(d);
           if (p.ext && p.data) {
             setData(p.data);
@@ -58,26 +70,70 @@ function App() {
       });
   }, [bin]);
 
+  const save = useCallback(async () => {
+    if (!data) return;
+    setLoading(true);
+
+    let paste = JSON.stringify({ data, ext });
+
+    let hash = await SEA.work(paste, null, null, {
+      name: "SHA-256",
+    });
+    let b64Hash = TextToB64(hash);
+    let title = `[${ext}] - ${data.trim().substring(0, 10)}`;
+
+    gun
+      .get("grizzly")
+      .get("bin")
+      .get("#")
+      .get(hash)
+      .put(paste, (res) => {
+        if (res.ok) {
+          setBin(b64Hash);
+
+          if (!bins.some((e) => e.id === b64Hash))
+            setBins((prev) => [{ title, id: b64Hash }, ...prev]);
+
+          navigate("/" + b64Hash);
+        }
+        setLoading(false);
+      });
+  }, [bins, data, ext, navigate]);
+
   return (
     <div className="container">
       <header>
-        <span>~decentralized p2p pastebin</span>
-        <button onClick={() => setEditor((prev) => !prev)}>
+        <Link to="/">
+          <span>~decentralized p2p pastebin</span>
+        </Link>
+        <button className="switch" onClick={() => setEditor((prev) => !prev)}>
           Switch to {editor ? "simple" : "monaco (vscode)"} editor
         </button>
       </header>
       <main>
+        <div className="grid"></div>
+
         <div className="area">
-          <Suspense fallback={"Loading..."}>
-            {editor ? (
-              <Monaco setData={setData} ext={ext} data={data} />
-            ) : (
-              <CodeArea setData={setData} ext={ext} data={data} />
-            )}
-          </Suspense>
+          {loadingPaste ? (
+            <Loading />
+          ) : (
+            <Suspense fallback={<Loading />}>
+              {editor ? (
+                <Monaco setData={setData} ext={ext} data={data} theme={theme} />
+              ) : (
+                <CodeArea setData={setData} ext={ext} data={data} />
+              )}
+            </Suspense>
+          )}
         </div>
         <div className="side">
-          <Languages ext={ext} setExt={setExt} editor={editor} />
+          <Languages
+            ext={ext}
+            setExt={setExt}
+            editor={editor}
+            setTheme={setTheme}
+            theme={theme}
+          />
 
           {bin && (
             <button
@@ -90,37 +146,7 @@ function App() {
             </button>
           )}
 
-          <button
-            onClick={async () => {
-              if (!data) return;
-              setLoading(true);
-
-              let paste = JSON.stringify({ data, ext });
-
-              let hash = await SEA.work(paste, null, null, {
-                name: "SHA-256",
-              });
-              let b64Hash = TextToB64(hash);
-              let title = `[${ext}] - ${data.trim().substring(0, 10)}`;
-
-              gun
-                .get("grizzly")
-                .get("bin")
-                .get("#")
-                .get(hash)
-                .put(paste, (res) => {
-                  if (res.ok) {
-                    setBin(b64Hash);
-
-                    if (!bins.some((e) => e.id === b64Hash))
-                      setBins((prev) => [{ title, id: b64Hash }, ...prev]);
-
-                    navigate("/" + b64Hash);
-                  }
-                  setLoading(false);
-                });
-            }}
-          >
+          <button onClick={save}>
             {loading ? "Saving..." : "Save Pernamentally"}
           </button>
 
@@ -139,19 +165,20 @@ function App() {
                   clear
                 </span>
               </div>
-
-              {bins.map((b, k) => (
-                <div
-                  className="bin"
-                  key={k}
-                  onClick={() => {
-                    setBin(b.id);
-                    navigate("/" + b.id);
-                  }}
-                >
-                  {b.title}
-                </div>
-              ))}
+              <div className="bins-list">
+                {bins.map((b, k) => (
+                  <div
+                    className="bin"
+                    key={k}
+                    onClick={() => {
+                      setBin(b.id);
+                      navigate("/" + b.id);
+                    }}
+                  >
+                    {b.title}
+                  </div>
+                ))}
+              </div>
             </div>
           )}
         </div>

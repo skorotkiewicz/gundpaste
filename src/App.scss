@@ -4,6 +4,11 @@
   box-sizing: border-box;
 }
 
+body,
+html {
+  overflow: hidden;
+}
+
 .container {
   display: flex;
   flex-direction: column;
@@ -25,8 +30,10 @@
   background-color: #222831;
 
   .bins {
-    overflow-y: scroll;
-    height: 80vh;
+    .bins-list {
+      overflow-y: scroll;
+      height: 80vh;
+    }
 
     .head {
       display: flex;
@@ -51,16 +58,24 @@
   }
 }
 
+.loading {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  align-content: center;
+}
+
 header {
   display: flex;
-  // flex-direction: column;
-  color: #eee;
   align-items: center;
-  // justify-content: center;
   justify-content: space-between;
   padding: 20px;
   background-color: #393e46;
-  box-shadow: rgba(0, 0, 0, 0.2) 0px 0 10px 0;
+  box-shadow: rgba(0, 0, 0, 0.9) 0px 0 10px 0;
+
+  a {
+    text-decoration: none;
+  }
 }
 
 main {
@@ -70,7 +85,6 @@ main {
 }
 
 footer {
-  // margin-top: 30px;
   padding: 10px;
   display: flex;
   align-items: center;
@@ -80,9 +94,7 @@ footer {
   }
 }
 
-button,
-select,
-input {
+button {
   border: 3px solid #00adb5;
   background-color: #222831;
   color: #eeeeee;
@@ -91,4 +103,80 @@ input {
   padding: 5px;
   cursor: pointer;
   margin-bottom: 5px;
+}
+
+input,
+select {
+  border: 0;
+  border-bottom: 2px solid #00adb5;
+  background-color: #222831;
+  color: #eeeeee;
+  font-weight: bold;
+  padding: 5px;
+  outline: none;
+  margin-bottom: 30px;
+}
+
+input {
+  cursor: text;
+}
+
+select {
+  cursor: pointer;
+}
+
+main {
+  perspective: 700px;
+}
+
+header {
+  background: hsl(204 100% 5%);
+
+  span {
+    background: linear-gradient(to right, hsl(98 100% 62%), hsl(204 100% 59%));
+    background-clip: text;
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+
+    font-size: 2vmin;
+    line-height: 1.1;
+    font-family: "Dank Mono", ui-monospace, monospace;
+  }
+}
+
+.grid {
+  $main: #7d41e6;
+  $glow: rgba(#2e26ff, 0.4);
+  background: linear-gradient(
+      transparent 65%,
+      $glow 75%,
+      $main 80%,
+      $glow 85%,
+      transparent 95%
+    ),
+    linear-gradient(
+      90deg,
+      transparent 65%,
+      $glow 75%,
+      $main 80%,
+      $glow 85%,
+      transparent 95%
+    );
+  background-size: 30px 30px;
+  width: 200vw;
+  height: 300vh;
+  position: absolute;
+  bottom: -120vh;
+  transform: rotateX(-100deg);
+  mask-image: linear-gradient(rgba(0, 0, 0, 1), rgba(0, 0, 0, 0) 80%);
+  -webkit-mask-image: linear-gradient(rgba(0, 0, 0, 1), rgba(0, 0, 0, 0) 80%);
+}
+
+.switch {
+  height: 30px;
+  outline: none;
+  color: #9294f8;
+  background: #111;
+  border-radius: 10px;
+  border: 1px solid #6465b5;
 }
