@@ -3,6 +3,10 @@
   "version": "0.1.0",
   "private": true,
   "dependencies": {
+    "@monaco-editor/react": "^4.4.4",
+    "@uiw/react-monacoeditor": "^3.5.3",
+    "@uiw/react-textarea-code-editor": "^2.0.2",
+    "buffer": "^6.0.3",
     "gun": "^0.2020.1237",
     "nanoid": "^3.3.3",
     "react": "^18.1.0",

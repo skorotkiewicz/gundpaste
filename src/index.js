@@ -10,19 +10,7 @@ root.render(
     <HashRouter>
       <Routes>
         <Route path="/" element={<App />}>
-          {/* <Route path="expenses" element={<App />} /> */}
-
-          <Route path="bin" element={<App />}>
-            <Route path=":binId" element={<App />} />
-          </Route>
-          <Route
-            path="*"
-            element={
-              <main style={{ padding: "1rem" }}>
-                <p>There's nothing here!</p>
-              </main>
-            }
-          />
+          <Route path=":binId" element={<App />} />
         </Route>
       </Routes>
     </HashRouter>

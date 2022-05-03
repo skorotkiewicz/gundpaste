@@ -2,7 +2,11 @@ import { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import "./App.scss";
 import Gun from "gun/gun";
-import { nanoid } from "nanoid";
+import SEA from "gun/sea";
+import CodeEditor from "@uiw/react-textarea-code-editor";
+import Editor from "@monaco-editor/react";
+import Languages from "./components/Languages";
+import { B64ToText, TextToB64 } from "./utils";
 
 let gun = Gun();
 gun.opt({
@@ -18,6 +22,8 @@ function App() {
   const [bin, setBin] = useState(params.binId);
   const [bins, setBins] = useState([]);
   const [data, setData] = useState("");
+  const [ext, setExt] = useState("jsx");
+  const [editor, setEditor] = useState(0);
 
   useEffect(() => {
     if (!bin) return;
@@ -25,83 +31,111 @@ function App() {
     gun
       .get("grizzly")
       .get("bin")
-      .get(bin)
-      .once((data) => {
-        if (data) setData(data);
-      });
-
-    gun
-      .get("grizzly")
-      .get("bin")
-      .get(bin)
-      .on((data) => {
-        if (data) setData(data);
+      .get("#")
+      .get(B64ToText(bin))
+      .once((d) => {
+        if (d) {
+          let p = JSON.parse(d);
+          if (p.ext && p.data) {
+            setData(p.data);
+            setExt(p.ext);
+          } else {
+            setData(d);
+          }
+        }
       });
   }, [bin]);
 
-  useEffect(() => {
-    if (!bin || !data) return;
-
-    let timeout = setTimeout(() => {
-      if (data) gun.get("grizzly").get("bin").get(bin).put(data);
-    }, 1000);
-
-    return () => {
-      clearTimeout(timeout);
-    };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [data]);
-
-  const newId = () => {
-    const id = nanoid(10);
-    setBin(id);
-    setData("");
-    navigate("/bin/" + id);
-    return id;
-  };
-
   return (
     <div className="container">
-      <header>~decentralized p2p pastebin</header>
+      <header>
+        <span>~decentralized p2p pastebin</span>
+        <button onClick={() => setEditor((prev) => !prev)}>
+          Switch to {editor ? "simple" : "monaco (vscode)"} editor
+        </button>
+      </header>
       <main>
         <div className="area">
-          <textarea
-            value={data}
-            placeholder="paste here!"
-            onChange={(e) => {
-              setData(e.target.value);
-
-              if (!params.binId) {
-                const id = newId();
-                gun.get("grizzly").get("bin").get(id).put(e.target.value);
-                setBins((prev) => [id, ...prev]);
-              }
-            }}
-          ></textarea>
+          {editor ? (
+            <Editor
+              theme="vs-dark"
+              value={data}
+              defaultLanguage={ext}
+              language={ext}
+              onChange={(e) => {
+                setData(e.target.value);
+              }}
+            />
+          ) : (
+            <CodeEditor
+              value={data}
+              language={ext}
+              placeholder="Enter your content."
+              onChange={(e) => {
+                setData(e.target.value);
+              }}
+              padding={15}
+              style={{
+                height: "100%",
+                fontSize: 12,
+                fontFamily:
+                  "ui-monospace,SFMono-Regular,SF Mono,Consolas,Liberation Mono,Menlo,monospace",
+              }}
+            />
+          )}
         </div>
         <div className="side">
+          <Languages ext={ext} setExt={setExt} editor={editor} />
+
+          {bin && (
+            <button
+              onClick={() => {
+                setData("");
+                navigate("/");
+              }}
+            >
+              New Bin
+            </button>
+          )}
+
           <button
-            onClick={() => {
-              setBins((prev) => [newId(), ...prev]);
+            onClick={async () => {
+              let paste = JSON.stringify({ data, ext });
+
+              let hash = await SEA.work(paste, null, null, {
+                name: "SHA-256",
+              });
+
+              gun.get("grizzly").get("bin").get("#").get(hash).put(paste);
+
+              setBin(TextToB64(hash));
+              if (!bins.includes(TextToB64(hash)))
+                setBins((prev) => [TextToB64(hash), ...prev]);
+
+              navigate("/" + TextToB64(hash));
             }}
           >
-            Add new bin
+            Save Pernamentally
           </button>
 
-          <div className="bins">
-            {bins.map((b, k) => (
-              <div
-                className="bin"
-                key={k}
-                onClick={() => {
-                  setBin(b);
-                  navigate("/bin/" + b);
-                }}
-              >
-                {b}
-              </div>
-            ))}
-          </div>
+          {bins.length > 0 && (
+            <div className="bins">
+              <div style={{ color: "#aaa", margin: 10 }}>your bins</div>
+
+              {bins.map((b, k) => (
+                <div
+                  className="bin"
+                  key={k}
+                  onClick={() => {
+                    setBin(b);
+                    navigate("/" + b);
+                  }}
+                >
+                  {b}
+                </div>
+              ))}
+            </div>
+          )}
         </div>
       </main>
       {/* <footer>Footer</footer> */}
