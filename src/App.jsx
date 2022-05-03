@@ -1,4 +1,4 @@
-import { useEffect, useState, Suspense, lazy } from "react";
+import { useEffect, useState, Suspense, lazy, useRef } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import "./App.scss";
 import Gun from "gun/gun";
@@ -25,6 +25,17 @@ function App() {
   const [data, setData] = useState("");
   const [ext, setExt] = useState("jsx");
   const [editor, setEditor] = useState(0);
+  const [loading, setLoading] = useState(false);
+  const loaded = useRef(false);
+
+  useEffect(() => {
+    if (localStorage.getItem("dpaste") && loaded.current === false)
+      setBins(JSON.parse(localStorage.getItem("dpaste")));
+
+    if (bins.length > 0) localStorage.setItem("dpaste", JSON.stringify(bins));
+
+    loaded.current = true;
+  }, [bins]);
 
   useEffect(() => {
     if (!bin) return;
@@ -57,15 +68,13 @@ function App() {
       </header>
       <main>
         <div className="area">
-          {editor ? (
-            <Suspense fallback={"Loading..."}>
+          <Suspense fallback={"Loading..."}>
+            {editor ? (
               <Monaco setData={setData} ext={ext} data={data} />
-            </Suspense>
-          ) : (
-            <Suspense fallback={"Loading..."}>
+            ) : (
               <CodeArea setData={setData} ext={ext} data={data} />
-            </Suspense>
-          )}
+            )}
+          </Suspense>
         </div>
         <div className="side">
           <Languages ext={ext} setExt={setExt} editor={editor} />
@@ -83,38 +92,64 @@ function App() {
 
           <button
             onClick={async () => {
+              if (!data) return;
+              setLoading(true);
+
               let paste = JSON.stringify({ data, ext });
 
               let hash = await SEA.work(paste, null, null, {
                 name: "SHA-256",
               });
+              let b64Hash = TextToB64(hash);
+              let title = `[${ext}] - ${data.substring(0, 10)}`;
 
-              gun.get("grizzly").get("bin").get("#").get(hash).put(paste);
+              gun
+                .get("grizzly")
+                .get("bin")
+                .get("#")
+                .get(hash)
+                .put(paste, (res) => {
+                  if (res.ok) {
+                    setBin(b64Hash);
 
-              setBin(TextToB64(hash));
-              if (!bins.includes(TextToB64(hash)))
-                setBins((prev) => [TextToB64(hash), ...prev]);
+                    if (!bins.some((e) => e.id === b64Hash))
+                      setBins((prev) => [{ title, id: b64Hash }, ...prev]);
 
-              navigate("/" + TextToB64(hash));
+                    navigate("/" + b64Hash);
+                  }
+                  setLoading(false);
+                });
             }}
           >
-            Save Pernamentally
+            {loading ? "Saving..." : "Save Pernamentally"}
           </button>
 
           {bins.length > 0 && (
             <div className="bins">
-              <div style={{ color: "#aaa", margin: 10 }}>your bins</div>
+              <div className="head">
+                <span>your bins</span>
+
+                <span
+                  className="clear"
+                  onClick={() => {
+                    setBins([]);
+                    localStorage.removeItem("dpaste");
+                  }}
+                >
+                  clear
+                </span>
+              </div>
 
               {bins.map((b, k) => (
                 <div
                   className="bin"
                   key={k}
                   onClick={() => {
-                    setBin(b);
-                    navigate("/" + b);
+                    setBin(b.id);
+                    navigate("/" + b.id);
                   }}
                 >
-                  {b}
+                  {b.title}
                 </div>
               ))}
             </div>

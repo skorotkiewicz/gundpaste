@@ -28,6 +28,17 @@
     overflow-y: scroll;
     height: 80vh;
 
+    .head {
+      display: flex;
+      color: #aaa;
+      margin: 10px;
+      justify-content: space-between;
+
+      .clear {
+        cursor: pointer;
+      }
+    }
+
     .bin {
       border: 1px solid #00adb5;
       border-radius: 0.2rem;
