@@ -57,13 +57,15 @@ function App() {
       </header>
       <main>
         <div className="area">
-          <Suspense fallback={"Loading..."}>
-            {editor ? (
+          {editor ? (
+            <Suspense fallback={"Loading..."}>
               <Monaco setData={setData} ext={ext} data={data} />
-            ) : (
+            </Suspense>
+          ) : (
+            <Suspense fallback={"Loading..."}>
               <CodeArea setData={setData} ext={ext} data={data} />
-            )}
-          </Suspense>
+            </Suspense>
+          )}
         </div>
         <div className="side">
           <Languages ext={ext} setExt={setExt} editor={editor} />
