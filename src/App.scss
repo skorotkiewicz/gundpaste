@@ -59,11 +59,14 @@ main {
 }
 
 footer {
-  margin-top: 30px;
-  padding: 20px;
+  // margin-top: 30px;
+  padding: 10px;
   display: flex;
   align-items: center;
   justify-content: center;
+  a {
+    color: #009097;
+  }
 }
 
 button,

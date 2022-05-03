@@ -1,12 +1,13 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, Suspense, lazy } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import "./App.scss";
 import Gun from "gun/gun";
 import SEA from "gun/sea";
-import CodeEditor from "@uiw/react-textarea-code-editor";
-import Editor from "@monaco-editor/react";
 import Languages from "./components/Languages";
 import { B64ToText, TextToB64 } from "./utils";
+
+const Monaco = lazy(() => import("./components/Monaco"));
+const CodeArea = lazy(() => import("./components/CodeArea"));
 
 let gun = Gun();
 gun.opt({
@@ -56,33 +57,13 @@ function App() {
       </header>
       <main>
         <div className="area">
-          {editor ? (
-            <Editor
-              theme="vs-dark"
-              value={data}
-              defaultLanguage={ext}
-              language={ext}
-              onChange={(e) => {
-                setData(e.target.value);
-              }}
-            />
-          ) : (
-            <CodeEditor
-              value={data}
-              language={ext}
-              placeholder="Enter your content."
-              onChange={(e) => {
-                setData(e.target.value);
-              }}
-              padding={15}
-              style={{
-                height: "100%",
-                fontSize: 12,
-                fontFamily:
-                  "ui-monospace,SFMono-Regular,SF Mono,Consolas,Liberation Mono,Menlo,monospace",
-              }}
-            />
-          )}
+          <Suspense fallback={"Loading..."}>
+            {editor ? (
+              <Monaco setData={setData} ext={ext} data={data} />
+            ) : (
+              <CodeArea setData={setData} ext={ext} data={data} />
+            )}
+          </Suspense>
         </div>
         <div className="side">
           <Languages ext={ext} setExt={setExt} editor={editor} />
@@ -138,7 +119,15 @@ function App() {
           )}
         </div>
       </main>
-      {/* <footer>Footer</footer> */}
+      <footer>
+        <a
+          href="https://github.com/skorotkiewicz/gundpaste"
+          target="_blank"
+          rel="noreferrer"
+        >
+          open-source
+        </a>
+      </footer>
     </div>
   );
 }
