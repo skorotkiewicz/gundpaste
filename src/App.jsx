@@ -101,7 +101,7 @@ function App() {
                 name: "SHA-256",
               });
               let b64Hash = TextToB64(hash);
-              let title = `[${ext}] - ${data.substring(0, 10)}`;
+              let title = `[${ext}] - ${data.trim().substring(0, 10)}`;
 
               gun
                 .get("grizzly")
