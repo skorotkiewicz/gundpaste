@@ -17,14 +17,6 @@ import Loading from "./components/Loading";
 const Monaco = lazy(() => import("./components/Monaco"));
 const CodeArea = lazy(() => import("./components/CodeArea"));
 
-let gun = Gun();
-gun.opt({
-  peers: [
-    "https://grizzly.de1.hashbang.sh/gun",
-    // "https://gun-manhattan.herokuapp.com/gun",
-  ],
-});
-
 function App() {
   let params = useParams();
   let navigate = useNavigate();
@@ -38,6 +30,14 @@ function App() {
   const [dataOrigin, setDataOrigin] = useState("");
   const [theme, setTheme] = useState("monokai");
   const loaded = useRef(false);
+
+  const gun = Gun();
+  gun.opt({
+    peers: [
+      "https://grizzly.de1.hashbang.sh/gun",
+      // "https://gun-manhattan.herokuapp.com/gun",
+    ],
+  });
 
   useEffect(() => {
     if (localStorage.getItem("dpaste") && loaded.current === false)
@@ -148,7 +148,7 @@ function App() {
             </button>
           )}
 
-          <button onClick={save}>
+          <button style={{ opacity: data ? 1 : 0.3 }} onClick={save}>
             {loading
               ? "Saving..."
               : data === dataOrigin
