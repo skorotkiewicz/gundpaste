@@ -8,7 +8,6 @@ import {
 } from "react";
 import { useParams, useNavigate, Link } from "react-router-dom";
 import "./App.scss";
-import Gun from "gun/gun";
 import SEA from "gun/sea";
 import Languages from "./components/Languages";
 import { B64ToText, TextToB64 } from "./utils";
@@ -17,7 +16,7 @@ import Loading from "./components/Loading";
 const Monaco = lazy(() => import("./components/Monaco"));
 const CodeArea = lazy(() => import("./components/CodeArea"));
 
-function App() {
+function App({ gun }) {
   let params = useParams();
   let navigate = useNavigate();
   const [bin, setBin] = useState(params.binId);
@@ -30,14 +29,6 @@ function App() {
   const [dataOrigin, setDataOrigin] = useState("");
   const [theme, setTheme] = useState("monokai");
   const loaded = useRef(false);
-
-  const gun = Gun();
-  gun.opt({
-    peers: [
-      "https://grizzly.de1.hashbang.sh/gun",
-      // "https://gun-manhattan.herokuapp.com/gun",
-    ],
-  });
 
   useEffect(() => {
     if (localStorage.getItem("dpaste") && loaded.current === false)
@@ -70,7 +61,7 @@ function App() {
           }
         }
       });
-  }, [bin]);
+  }, [bin, gun]);
 
   const save = useCallback(async () => {
     if (!data) return;
@@ -81,6 +72,9 @@ function App() {
     let hash = await SEA.work(paste, null, null, {
       name: "SHA-256",
     });
+
+    if (!hash) return;
+
     let b64Hash = TextToB64(hash);
     let title = `[${ext}] - ${data.trim().substring(0, 10)}`;
 
@@ -100,7 +94,7 @@ function App() {
         }
         setLoading(false);
       });
-  }, [bins, data, ext, navigate]);
+  }, [bins, data, ext, gun, navigate]);
 
   return (
     <div className="container">
