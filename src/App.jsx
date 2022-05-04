@@ -35,6 +35,7 @@ function App() {
   const [editor, setEditor] = useState(0);
   const [loading, setLoading] = useState(false);
   const [loadingPaste, setLoadingPaste] = useState(false);
+  const [dataOrigin, setDataOrigin] = useState("");
   const [theme, setTheme] = useState("monokai");
   const loaded = useRef(false);
 
@@ -62,6 +63,7 @@ function App() {
           let p = JSON.parse(d);
           if (p.ext && p.data) {
             setData(p.data);
+            setDataOrigin(p.data);
             setExt(p.ext);
           } else {
             setData(d);
@@ -147,7 +149,11 @@ function App() {
           )}
 
           <button onClick={save}>
-            {loading ? "Saving..." : "Save Pernamentally"}
+            {loading
+              ? "Saving..."
+              : data === dataOrigin
+              ? "Save locally"
+              : "Save Pernamentally"}
           </button>
 
           {bins.length > 0 && (
