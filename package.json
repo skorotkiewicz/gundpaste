@@ -13,7 +13,7 @@
     "react-loader-spinner": "6.0.0-0",
     "react-router-dom": "6",
     "react-scripts": "5.0.1",
-    "sass": "^1.49.9"
+    "sass": "^1.51.0"
   },
   "scripts": {
     "start": "react-scripts start",
