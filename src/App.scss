@@ -21,6 +21,8 @@ html {
   margin: 10px;
 }
 .side {
+  z-index: 1;
+
   display: flex;
   flex-direction: column;
 
@@ -30,8 +32,6 @@ html {
   background-color: #222831;
 
   .bins {
-    z-index: 1;
-
     .bins-list {
       overflow-y: scroll;
       height: 80vh;
