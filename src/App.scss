@@ -30,6 +30,8 @@ html {
   background-color: #222831;
 
   .bins {
+    z-index: 1;
+
     .bins-list {
       overflow-y: scroll;
       height: 80vh;
