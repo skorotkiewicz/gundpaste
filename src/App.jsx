@@ -28,6 +28,7 @@ function App({ gun }) {
   const [loadingPaste, setLoadingPaste] = useState(false);
   const [dataOrigin, setDataOrigin] = useState("");
   const [theme, setTheme] = useState("monokai");
+  const [connect, setConnect] = useState(0);
   const loaded = useRef(false);
 
   useEffect(() => {
@@ -61,7 +62,24 @@ function App({ gun }) {
           }
         }
       });
-  }, [bin, gun]);
+
+    // fix no data on first enter to website
+    if (!data && connect < 5) {
+      const isData = new Promise((resolve) =>
+        setTimeout(() => {
+          resolve(data);
+        }, 1000)
+      );
+
+      isData.then((d) => {
+        if (!d) {
+          setConnect((prev) => prev + 1);
+        }
+      });
+    }
+
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [bin, gun, connect]);
 
   const save = useCallback(async () => {
     if (!data) return;
