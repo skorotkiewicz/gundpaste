@@ -1,8 +1,8 @@
-import React, { StrictMode } from "react";
+import { StrictMode } from "react";
 import { createRoot } from "react-dom/client";
-import App from "./App";
 import { HashRouter, Routes, Route } from "react-router-dom";
 import Gun from "gun/gun";
+import App from "./App";
 
 const gun = Gun();
 gun.opt({

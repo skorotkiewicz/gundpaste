@@ -12,28 +12,29 @@ import SEA from "gun/sea";
 import Languages from "./components/Languages";
 import { B64ToText, TextToB64 } from "./utils";
 import Loading from "./components/Loading";
+import { IBins, IGunResult } from "./interfaces";
 
 const Monaco = lazy(() => import("./components/Monaco"));
 const CodeArea = lazy(() => import("./components/CodeArea"));
 
-function App({ gun }) {
+function App({ gun }: any) {
   let params = useParams();
   let navigate = useNavigate();
-  const [bin, setBin] = useState(params.binId);
-  const [bins, setBins] = useState([]);
-  const [data, setData] = useState("");
-  const [ext, setExt] = useState("javascript");
-  const [editor, setEditor] = useState(0);
-  const [loading, setLoading] = useState(false);
-  const [loadingPaste, setLoadingPaste] = useState(false);
-  const [dataOrigin, setDataOrigin] = useState("");
-  const [theme, setTheme] = useState("monokai");
-  const [connect, setConnect] = useState(0);
-  const loaded = useRef(false);
+  const [bin, setBin] = useState<string | undefined>(params.binId);
+  const [bins, setBins] = useState<IBins[]>([]);
+  const [data, setData] = useState<string>("");
+  const [ext, setExt] = useState<string>("javascript");
+  const [editor, setEditor] = useState<boolean>(false);
+  const [loading, setLoading] = useState<boolean>(false);
+  const [loadingPaste, setLoadingPaste] = useState<boolean>(false);
+  const [dataOrigin, setDataOrigin] = useState<string>("");
+  const [theme, setTheme] = useState<string>("monokai");
+  const [connect, setConnect] = useState<number>(0);
+  const loaded = useRef<boolean>(false);
 
   useEffect(() => {
     if (localStorage.getItem("dpaste") && loaded.current === false)
-      setBins(JSON.parse(localStorage.getItem("dpaste")));
+      setBins(JSON.parse(localStorage.getItem("dpaste") || "{}"));
 
     if (bins.length > 0) localStorage.setItem("dpaste", JSON.stringify(bins));
 
@@ -48,7 +49,7 @@ function App({ gun }) {
       .get("bin")
       .get("#")
       .get(B64ToText(bin))
-      .once((d) => {
+      .once((d: string) => {
         if (d) {
           setLoadingPaste(false);
 
@@ -63,7 +64,6 @@ function App({ gun }) {
         }
       });
 
-    // fix no data on first enter to website
     if (!data && connect < 5) {
       const isData = new Promise((resolve) =>
         setTimeout(() => {
@@ -77,7 +77,6 @@ function App({ gun }) {
         }
       });
     }
-
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [bin, gun, connect]);
 
@@ -101,7 +100,7 @@ function App({ gun }) {
       .get("bin")
       .get("#")
       .get(hash)
-      .put(paste, (res) => {
+      .put(paste, (res: IGunResult) => {
         if (res.ok) {
           setBin(b64Hash);
 

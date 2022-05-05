@@ -1,6 +1,13 @@
-import monacoThemes from "monaco-themes/themes/themelist";
+import { monacoThemes } from "./../config";
+import { ILanguagesProps } from "../interfaces";
 
-const Languages = ({ ext, setExt, editor, setTheme, theme }) => {
+const Languages = ({
+  ext,
+  setExt,
+  editor,
+  setTheme,
+  theme,
+}: ILanguagesProps) => {
   const supportedLanguages = [
     { id: 1, name: "apex" },
     { id: 2, name: "azcli" },
@@ -83,7 +90,7 @@ const Languages = ({ ext, setExt, editor, setTheme, theme }) => {
               setTheme(e.target.value);
             }}
           >
-            {Object.keys(monacoThemes).map((key, index) => (
+            {Object.keys(monacoThemes).map((key: string, index: number) => (
               <option key={`tm-${index}`} value={key}>
                 {monacoThemes[key]}
               </option>

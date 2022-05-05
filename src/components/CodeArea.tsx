@@ -1,6 +1,7 @@
 import CodeEditor from "@uiw/react-textarea-code-editor";
+import { ICodeArea } from "../interfaces";
 
-const CodeArea = ({ data, ext, setData }) => {
+const CodeArea = ({ data, ext, setData }: ICodeArea) => {
   return (
     <CodeEditor
       value={data}
